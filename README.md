@@ -4,7 +4,7 @@ A project base on [EuroCrops](https://www.eurocrops.tum.de/index.html), aiming t
 ## Resources
 
 EuroCrops
-- [The project this work expands on](https://www.eurocrops.tum.de/)
+- [The project website that LuxCrop expands on and aims to contribute to](https://www.eurocrops.tum.de/) ([Github](https://github.com/maja601/EuroCrops))
 - [Sentinel 2 bands description](https://gisgeography.com/sentinel-2-bands-combinations/)
 - [M. Schneider replication](https://github.com/maja601/RC2020-psetae)
 - [PyTorch Satellite Image Time Series Classification PSE & TSA](https://github.com/VSainteuf/pytorch-psetae)
