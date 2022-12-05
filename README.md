@@ -11,3 +11,6 @@ EuroCrops
 
 Methodology/Coding
 - [Introduction to Earth Engine Python API](https://developers.google.com/earth-engine/tutorials/community/intro-to-python-api)
+
+Sentinel data download
+- [SNAP](https://step.esa.int/main/download/snap-download/) allows easier satellite imagery download and Python integration (with the SNAPISTA wrapper)
