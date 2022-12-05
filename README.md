@@ -8,6 +8,7 @@ EuroCrops
 - [Sentinel 2 bands description](https://gisgeography.com/sentinel-2-bands-combinations/)
 - [M. Schneider replication](https://github.com/maja601/RC2020-psetae)
 - [PyTorch Satellite Image Time Series Classification PSE & TSA](https://github.com/VSainteuf/pytorch-psetae)
+- [Presentation by M. Schneider on the project](https://eurogeographics.org/wp-content/uploads/2022/02/4.-EuroCrops_GeodataDiscoverability28042022-Maya-Schneider.pdf)
 
 Methodology/Coding
 - [Introduction to Earth Engine Python API](https://developers.google.com/earth-engine/tutorials/community/intro-to-python-api)
