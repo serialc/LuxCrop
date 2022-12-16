@@ -1,18 +1,37 @@
-from qgis.core import *
+from qgis.core import (
+    QgsVectorLayer,
+    QgsApplication
+)
+import qgis.utils
+import os
 
-# Supply path to qgis install location
-QgsApplication.setPrefixPath("/usr/bin/qgis/", True)
-
-# Create a reference to the QgsApplication.  Setting the
-# second argument to False disables the GUI.
-qgs = QgsApplication([], False)
-
-
-# Load providers
-qgs.initQgis()
-
-# Write your code here to load some layers, use processing algorithms, etc.
+# path variables
+parcels_path = 'data/parcels/belgium_extract.shp'
+sat_imgs_path = 'data/sat/'
 
 
-# Finally, exitQgis() is called to remove the provider and layer registries from memory
-qgs.exitQgis()
+# Loading the vector file
+parcels = QgsVectorLayer(parcels_path, "belgium_extract", "ogr")
+
+# checking it's loaded correctly
+if parcels.isValid():
+    print("Layer loaded successfully")
+else:
+    print("Layer failed to load!")
+
+for sat_file_name in os.listdir(sat_imgs_path):
+    # load sat img
+    sat = QgsRasterLayer(sat_imgs_path + sat_file_name, sat_file_name")
+
+
+exit()
+
+# iterate through the features/rows of attribugte table
+features = parcels.getFeatures()
+for f in features:
+    print("Feature ID: ", f.id())
+
+    # want to select one feature
+    print(f)
+
+
