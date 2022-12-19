@@ -1,68 +1,96 @@
+# load the python modules
+import os
+from pathlib import Path
+
+# load the QGIS modules
 from qgis.core import (
     QgsApplication,
     QgsVectorLayer,
-    QgsRasterLayer
+    QgsProject,
+    QgsRasterLayer,
+    QgsVectorFileWriter
 )
+from qgis.analysis import QgsZonalStatistics
 import qgis.utils
-import os
-#import processing
-from pathlib import Path
 
-# setup QGIS so we can display data
-qgs = QgsApplication([], True)
-QgsApplication.setPrefixPath("/usr/bin/qgis", True)
-QgsApplication.initQgis()
+# package our main algorithm in a wrapper
+def loadQgisWrapper(pfn, satpath):
+    # setup QGIS so we can display data
+    qgs = QgsApplication([], True)
+    QgsApplication.setPrefixPath("/usr/bin/qgis", True)
+    QgsApplication.initQgis()
 
-# path variables
-parcels_path = 'data/parcels/belgium_extract.shp'
-sat_imgs_path = 'data/sat/'
+    calculateZonalMedians(pfn, satpath)
 
-# Loading the vector file
-parcels = QgsVectorLayer(parcels_path, "belgium_sample", "ogr")
+    qgs.exitQgis()
 
-# checking it's loaded correctly
-if parcels.isValid():
-    print("Layer loaded successfully")
-else:
-    print("Layer failed to load!")
+def calculateZonalMedians(parcels_fullpathname, satpath):
 
-# loading 
-for sat_file_name in os.listdir(sat_imgs_path):
-    # load sat img
-    sat = QgsRasterLayer(sat_imgs_path + sat_file_name, Path(sat_file_name).stem)
+    parcels_fp = str(Path(parcels_fullpathname).parent) + '/'
+    parcels_fname = Path(parcels_fullpathname).stem
+
+    # Loading the vector file
+    parcels = QgsVectorLayer(parcels_fullpathname, None, "ogr")
+
+    # create a copy in which we will store median values
+    p2_fullpathname = parcels_fp + parcels_fname + '_zonalstats.shp'
+    QgsVectorFileWriter.writeAsVectorFormat(parcels, p2_fullpathname, 'utf-8', parcels.crs(), 'ESRI Shapefile')
+
+    # use this copy to append zonal statistics to
+    p2 = QgsVectorLayer(p2_fullpathname, None, 'ogr')
 
     # checking it's loaded correctly
-    if sat.isValid():
-        print("Raster " + sat_file_name + " loaded successfully")
+    if p2.isValid():
+        print("Parcels layer loaded successfully. Ignore deprecation warning above (for now).\n")
     else:
-        print("Raster failed to load!")
+        exit("Failed to load parcels layer!")
 
-    print("Sat imagery dimensions: ", sat.width(), sat.height())
-    print(sat.rasterType())
+    # loading 
+    satimg = 1
+    for sfn in os.listdir(satpath):
 
+        # get extension in lowercase
+        rftype = Path(sfn).suffix.lower()
+        rfname = Path(sfn).stem
+        rfp = Path(sfn).parent
 
-    # iterate through the features/rows of attribugte table
-    features = parcels.getFeatures()
-    for f in features:
-        print("Feature ID: ", f.id())
+        # check this is a *.tif
+        if rftype != '.tif':
+            print("Skipping " + sfn + " as it's not a *.tif")
+            continue
+        else:
+            print("Trying to load " + sfn + "... ", end="")
 
-        # want to select one feature
-        print(f)
+        # load sat img
+        sat = QgsRasterLayer(satpath + sfn, sfn)
 
-        parameters = {'INPUT': sat,
-        'MASK': f,
-        'NODATA': -9999,
-        'ALPHA_BAND': False,
-        'CROP_TO_CUTLINE': True,
-        'KEEP_RESOLUTION': True,
-        'OPTIONS': None,
-        'DATA_TYPE': 0,
-        'OUTPUT': 'temp'}
+        # checking it's loaded correctly
+        if sat.isValid():
+            print("Success!")
+        else:
+            print("Failure - skipping!")
+            continue
 
-        #processing.runAndLoadResults('gdal:cliprasterbymasklayer', parameters)
+        # we want a multiband raster
+        if sat.rasterType() != 2:
+            print("Raster is not multiband! Skipping.")
 
+        # ok, looks valid - let's show some basic info
+        print("Sat imagery dimensions are: ", sat.width(), sat.height(), " with band count of ", sat.bandCount())
 
-    print("STOPPING after one sat for now")
-    exit()
+        # go through each band for this sat imagery
+        for bn in range(1, sat.bandCount() + 1):
+            # column names have a 8char max
+            # appends columns to data
+            QgsZonalStatistics(p2, sat, str(satimg) + '_' + str(bn), rasterBand=bn, stats=QgsZonalStatistics.Mean).calculateStatistics(None)
 
-qgs.exitQgis()
+        # count the sat imagery index
+        satimg +=1
+        print("")
+
+# Start the process
+parcels_filepath = 'data/parcels/belgium_extract.shp'
+sat_imgs_path = 'data/sat/'
+
+loadQgisWrapper(parcels_filepath, sat_imgs_path)
+
