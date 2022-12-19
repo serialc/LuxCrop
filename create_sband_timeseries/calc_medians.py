@@ -33,8 +33,11 @@ def calculateZonalMedians(parcels_fullpathname, satpath):
     parcels = QgsVectorLayer(parcels_fullpathname, None, "ogr")
 
     # create a copy in which we will store median values
-    p2_fullpathname = parcels_fp + parcels_fname + '_zonalstats.shp'
-    QgsVectorFileWriter.writeAsVectorFormat(parcels, p2_fullpathname, 'utf-8', parcels.crs(), 'ESRI Shapefile')
+    #p2_fullpathname = parcels_fp + parcels_fname + '_zonalstats.shp'
+    p2_fullpathname = parcels_fp + parcels_fname + '_zonalstats.gpkg'
+
+    QgsVectorFileWriter.writeAsVectorFormat(parcels, p2_fullpathname, "UTF-8", parcels.crs(), "GPKG")
+    #QgsVectorFileWriter.writeAsVectorFormat(parcels, p2_fullpathname, 'utf-8', parcels.crs(), 'ESRI Shapefile')
 
     # use this copy to append zonal statistics to
     p2 = QgsVectorLayer(p2_fullpathname, None, 'ogr')
@@ -82,7 +85,8 @@ def calculateZonalMedians(parcels_fullpathname, satpath):
         for bn in range(1, sat.bandCount() + 1):
             # column names have a 8char max
             # appends columns to data
-            QgsZonalStatistics(p2, sat, str(satimg) + '_' + str(bn), rasterBand=bn, stats=QgsZonalStatistics.Mean).calculateStatistics(None)
+            #QgsZonalStatistics(p2, sat, str(satimg) + '_' + str(bn), rasterBand=bn, stats=QgsZonalStatistics.Median).calculateStatistics(None)
+            QgsZonalStatistics(p2, sat, str(rfname) + '_' + str(bn) + "_", rasterBand=bn, stats=QgsZonalStatistics.Median).calculateStatistics(None)
 
         # count the sat imagery index
         satimg +=1
