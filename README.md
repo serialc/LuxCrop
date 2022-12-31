@@ -1,5 +1,5 @@
 # LuxCrop
-A project base on [EuroCrops](https://www.eurocrops.tum.de/index.html), aiming to identify crop types in Luxembourg from satellite imagery.
+A project based on [EuroCrops](https://www.eurocrops.tum.de/index.html), aiming to identify crop types in Luxembourg from satellite imagery.
 
 ## Pipeline
 
@@ -23,7 +23,8 @@ Download the script and create the appropriate folders:
 
 Run the script.
 
-The data will be placed in a copy of the shapefile (named \*\_zonalstats.shp) with all the info in the attributes table.
+The data will be placed in a copy of the shapefile (named \*\_zonalstats.gpkg) with all the info in the attributes table.
+We use a gpkg to store the data as it's possible to have more descriptive field names. Shape files are limited to 10 characters.
 The columns have the form [sat image file name]\_[band number]\_median
 
 
