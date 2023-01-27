@@ -113,12 +113,12 @@ def calculateZonalMedians(parcels_fullpathname, satpath):
         for bn in range(1, 14):
             # appends sat median for each parcel to a column named after the raster layer (should be the date)
             QgsZonalStatistics(p2, sat, str(rfname) + '_' + str(bn) + "_", rasterBand=bn, stats=QgsZonalStatistics.Median).calculateStatistics(None)
-        print("")
 
     print("Calculation of all parcel medians for all satellite images completed.")
 
     # get the index of the first median data row
-    mdi = len(p2.fields()) - len(sat_dates_list)*13
+    satimgcount = len(sat_dates_list)
+    mdi = len(p2.fields()) - satimgcount*13
 
     # get the field names - don't currently need
     #field_names = [x.name() for x in p2.fields()]
@@ -129,13 +129,16 @@ def calculateZonalMedians(parcels_fullpathname, satpath):
     for f in p2.getFeatures():
         att = f.attributes()
         # get just the median attriubtes skip the original parcel data
-        matt = np.array(att[mdi:])
+        #matt = np.array(att[mdi:])
+        matt = att[mdi:]
 
         # convert from 0-1 floats to 0-10,000 ints
-        intmatt = np.array(matt * 10000, dtype=int)
+        intmatt = [int(v * 10000) for v in matt]
 
         # split into groups of bands
-        smatt = np.split(intmatt, len(sat_dates_list))
+        smatt = []
+        for i in range(0, len(intmatt), 13):
+            smatt.append(intmatt[i:i+13])
 
         # add to data list
         d.append(smatt)
@@ -143,7 +146,7 @@ def calculateZonalMedians(parcels_fullpathname, satpath):
     # repackage as a pandas dataframe
     # get the parcel ids
     pids = [int(f[1]) for f in p2.getFeatures()]
-    df = pd.DataFrame(data=d, index=pids, columns=sat_dates_list)
+    df = pd.DataFrame(data=d, index=pids, columns=sat_dates_list, dtype=int)
 
     print(df)
 
