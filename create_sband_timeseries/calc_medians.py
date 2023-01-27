@@ -145,12 +145,24 @@ def calculateZonalMedians(parcels_fullpathname, satpath):
     pids = [int(f[1]) for f in p2.getFeatures()]
     df = pd.DataFrame(data=d, index=pids, columns=sat_dates_list)
 
-    # save to HDF file
+    print(df)
+
+    # save to HDF file 
     hdf_fn = parcels_fp + parcels_fname + '.h5'
+
+    # method 1
+    #hf = h5py.File(hdf_fn, 'w')
+    #hf.create_dataset('', data=
+    #hf.close()
+
+    # method 2
     #hdf = pd.HDFStore(hdf_fn)
     #hdf.put(parcels_fname, df, format='table', data_columns=True)
     #hdf.close()
-    df.to_hdf(hdf_fn, key=parcels_fname);
+
+    # method 3
+    #df.to_hdf(hdf_fn, key=parcels_fname);
+
     print("Finished")
 
 # Start the process
