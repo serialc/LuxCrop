@@ -69,7 +69,6 @@ def calculateZonalMedians(parcels_fullpathname, satpath):
     else:
         exit("Failed to load parcels layer " + parcels_fullpathname)
 
-
     # load each satellite/raster and get median for each parcel for each band
     sat_dates_list = []
     for sfn in os.listdir(satpath):
@@ -124,49 +123,44 @@ def calculateZonalMedians(parcels_fullpathname, satpath):
     #field_names = [x.name() for x in p2.fields()]
     #sfn = [x.split('_')[0] for x in field_names[mdi:]] # not we cut off the non median data
 
+    #### REPACKAGING ####
+    print("Finished processing. Repackaging data.")
+
     # for each parcel, get the 13 data points/band median for each satellite imagery
-    d = []
+    data = []
     for f in p2.getFeatures():
         att = f.attributes()
-        # get just the median attriubtes skip the original parcel data
+        # get just the median attributes skip the original parcel data
         #matt = np.array(att[mdi:])
         matt = att[mdi:]
+        fpid = int(att[1])
+
+        #print(str(matt[0]))
+
+        print(fpid)
+        if fpid == 250510:
+            [print(type(v)) for v in matt]
 
         # convert from 0-1 floats to 0-10,000 ints
         intmatt = [int(v * 10000) for v in matt]
 
         # split into groups of bands
-        smatt = []
         for i in range(0, len(intmatt), 13):
-            smatt.append(intmatt[i:i+13])
+            # every 13 columns are a band - to get the satellite number
+            satgroup = sat_dates_list[int(i/13)]
+            data.append([fpid] + [satgroup] + intmatt[i:i+13])
 
-        # add to data list
-        d.append(smatt)
+    #### SAVING ####
 
-    # repackage as a pandas dataframe
-    # get the parcel ids
+    # We save in a variety of formats
+    save_fn = parcels_fp + parcels_fname
+
     pids = [int(f[1]) for f in p2.getFeatures()]
-    df = pd.DataFrame(data=d, index=pids, columns=sat_dates_list, dtype=int)
+    df = pd.DataFrame(data=data, dtype=int)
 
-    print(df)
+    df.to_csv(save_fn + '.csv', index=False, header=False)
 
-    # save to HDF file 
-    hdf_fn = parcels_fp + parcels_fname + '.h5'
-
-    # method 1
-    #hf = h5py.File(hdf_fn, 'w')
-    #hf.create_dataset('', data=
-    #hf.close()
-
-    # method 2
-    #hdf = pd.HDFStore(hdf_fn)
-    #hdf.put(parcels_fname, df, format='table', data_columns=True)
-    #hdf.close()
-
-    # method 3
-    #df.to_hdf(hdf_fn, key=parcels_fname);
-
-    print("Finished")
+    print("Finished. Data is saved in your parcels folder.")
 
 # Start the process
 loadQgisWrapper(parcels_filepath, sat_imgs_path)
