@@ -135,14 +135,13 @@ def calculateZonalMedians(parcels_fullpathname, satpath):
         matt = att[mdi:]
         fpid = int(att[1])
 
-        #print(str(matt[0]))
-
-        print(fpid)
-        if fpid == 250510:
-            [print(type(v)) for v in matt]
-
+        intmatt = []
         # convert from 0-1 floats to 0-10,000 ints
-        intmatt = [int(v * 10000) for v in matt]
+        if isinstance(matt[0], float):
+            intmatt = [int(v * 10000) for v in matt]
+        else:
+            # likely is a QVariant
+            intmatt = [int(v.int() * 10000) for v in matt]
 
         # split into groups of bands
         for i in range(0, len(intmatt), 13):
