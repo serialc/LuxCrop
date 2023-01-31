@@ -6,6 +6,9 @@ import numpy as np
 import pandas as pd
 import h5py
 
+from PyQt5 import QtCore
+from PyQt5.QtCore import QVariant
+
 # load the QGIS modules
 from qgis.core import (
     QgsApplication,
@@ -135,13 +138,18 @@ def calculateZonalMedians(parcels_fullpathname, satpath):
         matt = att[mdi:]
         fpid = int(att[1])
 
-        intmatt = []
         # convert from 0-1 floats to 0-10,000 ints
-        if isinstance(matt[0], float):
-            intmatt = [int(v * 10000) for v in matt]
-        else:
-            # likely is a QVariant
-            intmatt = [int(v.int() * 10000) for v in matt]
+        intmatt = []
+        for i in range(len(matt)):
+            v = matt[i]
+
+            if isinstance(v, QVariant):
+                intmatt.append(int(v.Double * 10000))
+            else:
+                intmatt.append(int(v * 10000))
+
+        # some data types are QVariant for some reason
+        #intmatt = [int(v * 10000) for v in matt]
 
         # split into groups of bands
         for i in range(0, len(intmatt), 13):
