@@ -1,0 +1,147 @@
+#install.packages("tensorflow")
+#install.packages("caret")
+#install.packages("dplyr")
+#install.packages("keras")
+#install.packages(tidyverse)
+#install.packages(tidymodels)
+#install_keras(envname = "r-reticulate")
+
+
+library(tensorflow)
+#install_tensorflow(envname = "tf-gpu") Only do this once as the session will restart. 
+library(tensorflow)
+#use_condaenv("tf-gpu", required = TRUE)
+tf$constant("Hello Tensorflow!")
+Sys.which("python")
+
+#library(keras)
+#install_keras()
+#keras::install_keras() 
+
+
+
+
+# this will configure a python environment for R 
+reticulate::install_miniconda(force = TRUE)
+
+# this will install into the environment configured by reticulate
+library(reticulate)
+
+# other libraries needed
+library(tidyverse)
+library(tidymodels)
+library(dplyr)
+library(caret)
+
+
+setwd ("D:/CNN")
+getwd()
+df <- read.csv("BelCNN.csv")
+a = df[c(4,7886, 345, 895),]
+a
+b = df [c(1:180),]
+b
+head(b)
+tail (b)
+c = df [c(739:919),]
+c
+tail(c)
+d = df[c(1945:2125),]
+d
+tail(d)
+e = df[c(16255:16435),]
+e
+tail(e)
+f = df[c(16651:16830),]
+f
+tail(f)
+head(f)
+g = df[c(16867:17046),]
+g
+tail(g)
+h = df[c(17047:17226),]
+h
+tail(h)
+i = df[c(39655:39834),]
+i
+tail (i)
+j = df[c(46711:46890),]
+k = df[c(59437:59616),]
+l = df[c(59779:59958),]
+m = df[c(62731:62910),]
+n = df[c(62877:63306),]
+df2 <- rbind(a,b,c,d,e,f,g,h,i,j,k,l,m,n)
+df3 <- df
+df4 <- df2
+df3[!(df3$ParcelID %in% df4$ParcelID),]
+df5 <- anti_join(df3, df4, by= "ParcelID")
+Train <- df5
+Test <- df2
+Train2 <- select(Train, -2)
+Test2 <- select(Test, -2)
+TestM <- as.matrix(Test2)
+TrainM <- as.matrix(Train2)
+TestArray <- as.array(TestM)
+TrainArray <- as.array(TrainM)
+#Split labels and features for training set
+TrainMLabels <- TrainArray
+TrainMLabels <- TrainMLabels[, colnames(TrainMLabels) %in% c("ParcelID", "CropID", "SentinelID")]
+TrainMFeatures <- TrainArray
+TrainMFeatures <- TrainMFeatures [, !colnames(TrainMFeatures) %in% c("ParcelID", "CropID", "SentinelID")]
+
+#Build the model
+build_and_compile_model <- function(norm) {
+  model <- keras_model_sequential() %>%
+    norm() %>%
+    layer_dense(64, activation = 'relu') %>%
+    layer_dense(64, activation = 'relu') %>%
+    layer_dense(1)
+  
+  model %>% compile(
+    loss = 'mean_absolute_error',
+    optimizer = optimizer_adam(0.001)
+  )
+  
+  model 
+}
+
+#use model
+
+TrainArray <- matrix(as.numeric(TrainArray), ncol = ncol(TrainArray))
+TrainMFeatures <- matrix(as.numeric(TrainMFeatures), ncol = ncol(TrainMFeatures))
+TrainMLabels <- matrix(as.numeric(TrainMLabels), ncol = ncol(TrainMLabels))
+
+# function (x, type = c("O", "I", "F", "M", "2")) 
+# {
+#   if (identical("2", type)) {
+#     if (anyNA(x)) 
+#       return(NA_real_)
+#     svd(x, nu = 0L, nv = 0L)$d[1L]
+#   }
+#   else .Internal(La_dlange(x, type))
+# }
+# 
+function(norm) {
+  model <- keras_model_sequential() %>%
+    norm() %>%
+    layer_dense(64, activation = 'relu') %>%
+    layer_dense(64, activation = 'relu') %>%
+    layer_dense(1)
+  
+  model %>% compile(
+    loss = 'mean_absolute_error',
+    optimizer = optimizer_adam(0.001)
+  )
+  
+  model 
+}
+
+CpModel <- build_and_compile_model(TrainArray)
+Summary <- CpModel
+TrainModel <- CpModel %>% fit(
+  as.matrix(TrainMFeatures),
+  as.matrix(TrainMLabels),
+  validation_split = 0.2,
+  verbose = 0,
+  epochs = 100
+)
